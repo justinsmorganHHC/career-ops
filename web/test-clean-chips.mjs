@@ -83,10 +83,15 @@ test("multi-word entries preserved: 'Costa Rica, South Africa, United States' �
   assert.deepEqual(cleanChips(parts), ["Costa Rica", "South Africa", "United States"]);
 });
 
-test("cap at 16: 20 comma-separated countries → 16 chips", () => {
-  const countries = Array.from({ length: 20 }, (_, i) => `Country${i + 1}`);
+test("a real seeded list (110 location keywords) is NOT truncated", () => {
+  const parts = Array.from({ length: 110 }, (_, i) => `Place${i + 1}`);
+  assert.equal(cleanChips(parts).length, 110);
+});
+
+test("cap at 250: 300 comma-separated countries → 250 chips", () => {
+  const countries = Array.from({ length: 300 }, (_, i) => `Country${i + 1}`);
   const parts = split(countries.join(","));
-  assert.equal(cleanChips(parts).length, 16);
+  assert.equal(cleanChips(parts).length, 250);
 });
 
 test("'12345' → 1 chip (has digits)", () => {

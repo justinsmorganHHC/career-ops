@@ -142,14 +142,36 @@ export function parseExplorePatch(
   return next;
 }
 
+// Chips are comma-JOINED in the URL, so a chip that CONTAINS a comma used to be
+// torn in half on read: "Engineer, Platform" came back as "Engineer" + " Platform",
+// and the bare "Engineer" then matched every engineering title on earth (a
+// Cybersecurity Engineer and a Marketing Technology Engineer both scored as
+// DevOps matches). Location tokens were hit worse — ", us", ", uk" and the
+// "Vienna, VA"-style disambiguators all decomposed into junk.
+//
+// Percent-encode each chip BEFORE joining: a comma inside a chip becomes %2C and
+// survives the split, while the separator commas stay literal. Reading is
+// tolerant of legacy un-encoded URLs (decode failures fall back to the raw text).
+const joinChips = (xs: string[]) => xs.map(encodeURIComponent).join(",");
+const splitChips = (s: string | null): string[] | undefined =>
+  s
+    ? s.split(",").map((x) => {
+        try {
+          return decodeURIComponent(x);
+        } catch {
+          return x; // legacy/hand-edited URL with a stray '%' — keep it verbatim
+        }
+      })
+    : undefined;
+
 /** URL <-> filters codec (so a search is shareable/restorable). */
 export function filtersToParams(f: ExploreFilters): string {
   const sp = new URLSearchParams();
-  if (f.positive.length) sp.set("q", f.positive.join(","));
-  if (f.negative.length) sp.set("not", f.negative.join(","));
-  if (f.allow.length) sp.set("loc", f.allow.join(","));
-  if (f.block.length) sp.set("noloc", f.block.join(","));
-  if (f.alwaysAllow.length) sp.set("home", f.alwaysAllow.join(","));
+  if (f.positive.length) sp.set("q", joinChips(f.positive));
+  if (f.negative.length) sp.set("not", joinChips(f.negative));
+  if (f.allow.length) sp.set("loc", joinChips(f.allow));
+  if (f.block.length) sp.set("noloc", joinChips(f.block));
+  if (f.alwaysAllow.length) sp.set("home", joinChips(f.alwaysAllow));
   if (f.sinceDays !== DEFAULT_FILTERS.sinceDays) sp.set("since", String(f.sinceDays));
   if (f.ats.length !== ATS_SOURCES.length) sp.set("ats", f.ats.join(","));
   if (f.limitPerAts !== DEFAULT_FILTERS.limitPerAts) sp.set("limit", String(f.limitPerAts));
@@ -157,7 +179,7 @@ export function filtersToParams(f: ExploreFilters): string {
 }
 
 export function paramsToFilters(sp: URLSearchParams, base: ExploreFilters = DEFAULT_FILTERS): ExploreFilters {
-  const split = (s: string | null) => (s ? s.split(",") : undefined);
+  const split = splitChips;
   return parseExplorePatch(
     {
       positive: split(sp.get("q")),

@@ -94,6 +94,16 @@ export function runDiscovery(filters: ExploreFilters, onEvent: (e: ScanEvent) =>
       ats.join(","),
       "--limit",
       String(Math.max(1, filters.limitPerAts || 150)),
+      // WITHOUT --shuffle the scanner walks the ATS company list in dataset
+      // order and stops at --limit, so every Explore run scanned the SAME
+      // alphabetical head of ~15,900 companies (10alabs, absorblms, …) — even
+      // at the UI's max depth of 500/source that is ~12% of the dataset, and
+      // always the same 12%. After the first run everything is already in
+      // scan-history, so the user sees "0 new" forever. Shuffling samples a
+      // different slice each run, which is what makes repeated searches
+      // productive. The cap still applies; --shuffle only changes WHICH
+      // companies fill it.
+      "--shuffle",
     ];
     if (useJson) args.push("--json");
 

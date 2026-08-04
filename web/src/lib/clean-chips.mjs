@@ -3,7 +3,13 @@
 // test-clean-chips.mjs (which can't import .ts without a runner).
 // This is the single source of truth for the chip-cleaning logic.
 
-const CHIP_CAP = 16;
+// Guard against a runaway paste/patch, NOT a curation limit. It was 16, which
+// silently truncated real seeded config: portals.yml ships ~60 title positives
+// and ~110 location keywords, so `allow` was cut mid-alphabet (…florida,
+// georgia) and `block` lost every entry after the UK section — foreign roles
+// leaked in while most US states were dropped. Truncation is invisible in the
+// UI, so the cap must sit above any legitimate list.
+const CHIP_CAP = 250;
 
 /** Trim, drop empties, de-dupe case-insensitively, cap length. */
 export function cleanChips(v) {
