@@ -119,3 +119,17 @@ plan/
 
 # Web
 .career-ops-web/logo-cache/
+.career-ops-web/runs/
+.career-ops-web/apply-prefill.log
+
+# AgentBridge runtime state (unrelated tool, not career-ops source)
+.agentbridge/
+
+# IDE config (JetBrains — local, machine-specific)
+.idea/
+
+# Batch runner pause flag (ephemeral runtime state)
+batch/batch-runner.paused
+
+# Personal data exports (never commit)
+job-applications-*.csv

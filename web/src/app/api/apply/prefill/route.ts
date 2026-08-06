@@ -157,7 +157,11 @@ Output ONLY a compact JSON object mapping each field id → {"value": "...", "ne
 
       const result = await new Promise<{ buf: string; code: number | null; signal: NodeJS.Signals | null }>((resolve) => {
         // stdin = /dev/null so the CLI doesn't wait 3s for piped input.
-        const child = spawn(binPath, args, { cwd: careerOpsRoot(), env: process.env, stdio: ["ignore", "pipe", "pipe"] });
+        const child = spawn(binPath, args, {
+          cwd: careerOpsRoot(),
+          env: { ...process.env, GEMINI_CLI_TRUST_WORKSPACE: "true" },
+          stdio: ["ignore", "pipe", "pipe"],
+        });
         let buf = "";
         let firstByteAt = 0;
         const hb = setInterval(() => {

@@ -82,7 +82,11 @@ Return ONLY a JSON array, no prose, no code fence:
 function runPlanner(binPath: string, isClaude: boolean, argsFor: (p: string) => string[], prompt: string): Promise<string> {
   const args = isClaude ? ["-p", prompt, "--permission-mode", "acceptEdits", "--strict-mcp-config", "--allowedTools", "Read", "--disallowedTools", "Bash,Write,Edit,NotebookEdit,Task,WebFetch,WebSearch"] : argsFor(prompt);
   return new Promise((resolve) => {
-    const child = spawn(binPath, args, { cwd: careerOpsRoot(), env: process.env, stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(binPath, args, {
+      cwd: careerOpsRoot(),
+      env: { ...process.env, GEMINI_CLI_TRUST_WORKSPACE: "true" },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
     let buf = "";
     child.stdout.on("data", (d: Buffer) => (buf += d.toString()));
     child.stderr.on("data", () => {});

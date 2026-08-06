@@ -142,7 +142,10 @@ export async function POST(req: Request) {
   // (tracker.mjs delete doesn't yet share a lock with merge-tracker — see run-registry).
   const writeToken = kind === "evaluate" || kind === "pdf" ? acquireTrackerWrite() : null;
 
-  const child = spawn(binPath, args, { cwd: careerOpsRoot(), env: process.env });
+  const child = spawn(binPath, args, {
+    cwd: careerOpsRoot(),
+    env: { ...process.env, GEMINI_CLI_TRUST_WORKSPACE: "true" },
+  });
   const enc = new TextEncoder();
 
   // `closed` + kill timer in the OUTER scope so cancel() (client disconnect) can
@@ -215,6 +218,11 @@ export async function POST(req: Request) {
       });
       child.stderr.on("data", (d: Buffer) => {
         const s = d.toString();
+        // Gemini CLI's own internal startup-phase telemetry (e.g. "[STARTUP]
+        // Phase 'cleanup_ops' was started but never ended... not found (likely
+        // cleared by reset)") is benign self-diagnostics, not a real error —
+        // but its wording trips the "not found" match below. Skip it.
+        if (/^\s*\[STARTUP\]/i.test(s)) return;
         // Widened: auth/login/quota failures are the most common real error and
         // the old narrow regex missed them (silent false "success").
         if (/error|denied|fatal|not found|unauthorized|forbidden|auth|login|credential|api[ -]?key|quota|rate limit|not authenticated/i.test(s)) {

@@ -31,6 +31,10 @@ const STATUS_ALIAS: Record<string, string> = {
   monitor: "SKIP",
   no_aplicar: "SKIP",
   "no aplicar": "SKIP",
+  contratada: "HIRED",
+  contratado: "HIRED",
+  accepted: "HIRED",
+  accept: "HIRED",
 };
 
 export const CANONICAL_STATES = [
@@ -39,6 +43,7 @@ export const CANONICAL_STATES = [
   "Responded",
   "Interview",
   "Offer",
+  "Hired",
   "Rejected",
   "Discarded",
   "SKIP",
@@ -54,7 +59,7 @@ export function canonStatus(s: string): string {
  *  responded, red skip/rejected, gray discarded, neutral evaluated. */
 export function statusDot(status: string): string {
   const c = canonStatus(status);
-  if (c.includes("INTERVIEW") || c.includes("OFFER")) return "bg-emerald-400";
+  if (c.includes("INTERVIEW") || c.includes("OFFER") || c.includes("HIRED")) return "bg-emerald-400";
   if (c.includes("APPLIED") || c.includes("RESPONDED")) return "bg-sky-400";
   if (c.includes("REJECTED") || c.includes("SKIP")) return "bg-red-400";
   if (c.includes("DISCARDED")) return "bg-zinc-600";

@@ -75,7 +75,10 @@ export async function POST(req: Request) {
       ]
     : spec.args(prompt);
 
-  const child = spawn(binPath, args, { cwd: careerOpsRoot(), env: process.env });
+  const child = spawn(binPath, args, {
+    cwd: careerOpsRoot(),
+    env: { ...process.env, GEMINI_CLI_TRUST_WORKSPACE: "true" },
+  });
 
   const encoder = new TextEncoder();
   // `closed` + kill timer in the OUTER scope so cancel() can flip `closed` before
@@ -144,6 +147,10 @@ export async function POST(req: Request) {
       });
       child.stderr.on("data", (d: Buffer) => {
         const s = d.toString();
+        // Gemini CLI's own internal startup-phase telemetry is benign
+        // self-diagnostics, not a real error — but it can contain "not found"
+        // and trip the regex below. Skip it.
+        if (/^\s*\[STARTUP\]/i.test(s)) return;
         if (/error|not found|denied|fatal/i.test(s)) {
           safeEnqueue(`\n[${spec.name}] ${s.trim()}\n`);
         }

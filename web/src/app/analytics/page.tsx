@@ -10,6 +10,7 @@ const STAGES: { key: string; label: string }[] = [
   { key: "RESPONDED", label: "Responded" },
   { key: "INTERVIEW", label: "Interview" },
   { key: "OFFER", label: "Offer" },
+  { key: "HIRED", label: "Hired" },
   { key: "REJECTED", label: "Rejected" },
   { key: "DISCARDED", label: "Discarded" },
 ];
@@ -71,7 +72,7 @@ export default function Analytics() {
             value={s.n}
             pct={(s.n / maxStage) * 100}
             total={total}
-            tone={s.key === "OFFER" ? "positive" : "neutral"}
+            tone={s.key === "OFFER" || s.key === "HIRED" ? "positive" : "neutral"}
           />
         ))}
       </Section>

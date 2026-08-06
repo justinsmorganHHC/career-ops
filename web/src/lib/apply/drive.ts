@@ -59,7 +59,11 @@ function plannerTurn(binPath: string, prompt: string, resumeId: string | null): 
   const base = resumeId ? ["-p", "--resume", resumeId, prompt] : ["-p", prompt];
   const args = [...base, "--output-format", "json", "--strict-mcp-config", "--disallowedTools", "Bash,Read,Write,Edit,NotebookEdit,Task,WebFetch,WebSearch,Glob,Grep"];
   return new Promise((resolve) => {
-    const child = spawn(binPath, args, { cwd: careerOpsRoot(), env: process.env, stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(binPath, args, {
+      cwd: careerOpsRoot(),
+      env: { ...process.env, GEMINI_CLI_TRUST_WORKSPACE: "true" },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
     let buf = "";
     child.stdout.on("data", (d: Buffer) => (buf += d.toString()));
     child.stderr.on("data", () => {});
